@@ -5,8 +5,8 @@ const TopAppBar: React.FC = () => {
   return (
     <View style={styles.topAppBar}>
       <View style={styles.leadingTrailingIcons}>
-        <View style={styles.welcomeText}>
-          <Text>Welcome, Gideon</Text>
+        <View style={styles.welcomeTextContainer}>
+          <Text style={styles.welcomeText}>Welcome, Gideon</Text>
         </View>
         <Image
           source={{
@@ -15,8 +15,8 @@ const TopAppBar: React.FC = () => {
           style={styles.image}
         />
       </View>
-      <View style={styles.headline}>
-        <Text>Task Highlights</Text>
+      <View style={styles.headlineContainer}>
+        <Text style={styles.headline}>Task Highlights</Text>
       </View>
     </View>
   );
@@ -25,37 +25,45 @@ const TopAppBar: React.FC = () => {
 const styles = StyleSheet.create({
   topAppBar: {
     flexDirection: "column",
-    paddingBottom: 24, // Equivalent to `pb-6`
+    paddingBottom: 24,
     width: "100%",
-    backgroundColor: "#FFFF", // Fuchsia-50 color
+    backgroundColor: "#FFFF",
   },
   leadingTrailingIcons: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "flex-start",
-    paddingTop: 8,  // Equivalent to `pt-2`
-    paddingRight: 4, // Equivalent to `pr-1`
-    paddingLeft: 16, // Equivalent to `pl-4`
+    paddingTop: 8,
+    paddingRight: 4,
+    paddingLeft: 16,
     width: "100%",
-    fontSize: 24, // Equivalent to `text-2xl`
-    color: "#000", // Black color
   },
-  welcomeText: {
+  welcomeTextContainer: {
     flex: 1,
-    paddingVertical: 8, // Equivalent to `py-2`
+    paddingVertical: 8,
     width: 186,
   },
+  welcomeText: {
+    fontSize: 24, // Increased font size
+    fontWeight: "500", // Medium font weight
+    color: "#000",
+  },
   image: {
-    width: 96, // Equivalent to `w-24`
-    aspectRatio: 2, // Maintains the aspect ratio
-    resizeMode: "contain", // Equivalent to `object-contain`
+    width: 96,
+    aspectRatio: 2,
+    resizeMode: "contain",
+  },
+  headlineContainer: {
+    marginTop: 32,
+    paddingHorizontal: 16,
+    width: "100%",
+    alignItems: "center", // Centers the text horizontally
   },
   headline: {
-    marginTop: 32, // Equivalent to `mt-8`
-    paddingHorizontal: 16, // Equivalent to `px-4`
-    width: "100%",
-    fontSize: 24, // Equivalent to `text-3xl`
-    color: "#3A3A3A", // Zinc-900 color
+    fontSize: 26, // Increased font size
+    fontWeight: "600", // Bold font weight
+    color: "#3A3A3A",
+    textAlign: "center", // Centers the text within the container
   },
 });
 
