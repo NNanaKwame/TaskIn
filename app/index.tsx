@@ -4,7 +4,6 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import StatusBar from "./TaskManager/StatusBar";
 import TopAppBar from "./TaskManager/TopAppBar";
 import CarouselHero from "./TaskManager/CarouselHero";
-import SectionHeader from "./TaskManager/SectionHeader";
 import TaskList from "./TaskManager/TaskList";
 import GestureBar from "./TaskManager/GestureBar";
 import FAB from "./TaskManager/FAB";
@@ -15,7 +14,6 @@ const TaskManager: React.FC = () => {
       <StatusBar />
       <TopAppBar />
       <CarouselHero />
-      <SectionHeader />
       <TaskList />
       <GestureBar />
       <FAB />
