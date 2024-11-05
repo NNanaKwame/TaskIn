@@ -19,6 +19,8 @@ const images = [
   require('../TaskManager/images/2.jpg'),
   require('../TaskManager/images/3.jpg'),
   require('../TaskManager/images/4.jpg'),
+  require('../TaskManager/images/5.jpg'),
+  require('../TaskManager/images/6.jpg'),
 ];
 
 const AnimatedCarousel = () => {
