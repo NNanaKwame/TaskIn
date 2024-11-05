@@ -27,7 +27,7 @@ const styles = StyleSheet.create({
     flexDirection: "column",
     paddingBottom: 24,
     width: "100%",
-    backgroundColor: "#FFFF",
+    backgroundColor: "#f5f5f5",
   },
   leadingTrailingIcons: {
     flexDirection: "row",

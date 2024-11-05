@@ -1,5 +1,6 @@
 import React from "react";
 import { View, ScrollView, StyleSheet } from "react-native";
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import StatusBar from "./TaskManager/StatusBar";
 import TopAppBar from "./TaskManager/TopAppBar";
 import CarouselHero from "./TaskManager/CarouselHero";

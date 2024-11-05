@@ -13,6 +13,7 @@ const styles = StyleSheet.create({
   gestureBar: {
     flexDirection: "column",
     justifyContent: "center",
+    backgroundColor: "#f5f5f5",
     alignItems: "center",
     paddingHorizontal: 40, // This is equivalent to `px-20`
     paddingVertical: 10,   // This is equivalent to `py-2.5`

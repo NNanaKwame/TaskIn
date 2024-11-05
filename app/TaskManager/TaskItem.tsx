@@ -48,7 +48,7 @@ const styles = StyleSheet.create({
   listItem: {
     flexDirection: "column",
     width: "100%",
-    backgroundColor: "#ffff",
+    backgroundColor: "#f5f5f5",
     minHeight: 88,
     position: "relative",
   },
