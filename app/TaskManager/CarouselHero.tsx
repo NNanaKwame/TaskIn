@@ -10,9 +10,9 @@ import Animated, {
 } from 'react-native-reanimated';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
-const CARD_WIDTH = SCREEN_WIDTH * 0.75; // Increased width
-const CARD_HEIGHT = CARD_WIDTH * 0.7; // Reduced height ratio
-const AUTOPLAY_INTERVAL = 3000; // 3 seconds
+const CARD_WIDTH = SCREEN_WIDTH * 0.75;
+const CARD_HEIGHT = CARD_WIDTH * 0.7;
+const AUTOPLAY_INTERVAL = 3000;
 
 const images = [
   require('../TaskManager/images/1.jpg'),
@@ -57,7 +57,6 @@ const AnimatedCarousel = () => {
     changeSlide(-1);
   }, []);
 
-  // Autoplay functionality
   useEffect(() => {
     let interval: string | number | NodeJS.Timeout | undefined;
     if (isAutoplay) {
@@ -89,52 +88,61 @@ const AnimatedCarousel = () => {
   );
 
   return (
-    <View style={styles.container}>
-      <View style={styles.carouselContainer}>
-      <Pressable onPress={prevSlide} style={styles.navButton}>
-          <AntDesign name="leftcircle" size={30} color="#000" />
-        </Pressable>
+    <View style={styles.wrapper}>
+      <View style={styles.container}>
+        <View style={styles.carouselContainer}>
+          <Pressable onPress={prevSlide} style={[styles.navButton, styles.leftNavButton]}>
+            <AntDesign name="leftcircle" size={30} color="#000" />
+          </Pressable>
 
-        <Animated.View style={[styles.cardContainer, animatedStyle]}>
-          <Image
-            source={images[activeIndex]}
-            style={styles.image}
-            resizeMode="cover"
-          />
-          <View style={styles.overlay}>
-            <View style={styles.playPauseButton}>
-              <Pressable onPress={() => setIsAutoplay(!isAutoplay)}>
-                <AntDesign
-                  name={isAutoplay ? "pausecircleo" : "playcircleo"}
-                  size={24}
-                  color="white"
-                />
-              </Pressable>
+          <Animated.View style={[styles.cardContainer, animatedStyle]}>
+            <Image
+              source={images[activeIndex]}
+              style={styles.image}
+              resizeMode="cover"
+            />
+            <View style={styles.overlay}>
+              <View style={styles.playPauseButton}>
+                <Pressable onPress={() => setIsAutoplay(!isAutoplay)}>
+                  <AntDesign
+                    name={isAutoplay ? "pausecircleo" : "playcircleo"}
+                    size={24}
+                    color="white"
+                  />
+                </Pressable>
+              </View>
             </View>
-          </View>
-        </Animated.View>
+          </Animated.View>
 
-        <Pressable onPress={nextSlide} style={styles.navButton}>
-          <AntDesign name="rightcircle" size={30} color="#000" />
-        </Pressable>
+          <Pressable onPress={nextSlide} style={[styles.navButton, styles.rightNavButton]}>
+            <AntDesign name="rightcircle" size={30} color="#000" />
+          </Pressable>
+        </View>
+        {renderDots()}
       </View>
-      {renderDots()}
     </View>
   );
 };
 
 const styles = StyleSheet.create({
+  wrapper: {
+    width: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   container: {
-    flex: 1,
+    width: SCREEN_WIDTH,
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#f5f5f5',
+    paddingVertical: 20,
   },
   carouselContainer: {
+    width: SCREEN_WIDTH,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 20,
+    position: 'relative',
   },
   cardContainer: {
     width: CARD_WIDTH,
@@ -168,15 +176,22 @@ const styles = StyleSheet.create({
     padding: 5,
   },
   navButton: {
-    padding: 5,
-    marginHorizontal: 0,
-    backgroundColor: 'rgba(255, 255, 255, 0.7)', // Add background
-    borderRadius: 30,                            // Make it circular
-    zIndex: 1,                                   // Ensure it's above other elements
+    padding: 10,
+    backgroundColor: 'rgba(255, 255, 255, 0.7)',
+    borderRadius: 30,
+    position: 'absolute',
+    zIndex: 1,
+  },
+  leftNavButton: {
+    left: (SCREEN_WIDTH - CARD_WIDTH) / 2 - 25,
+  },
+  rightNavButton: {
+    right: (SCREEN_WIDTH - CARD_WIDTH) / 2 - 25,
   },
   dotsContainer: {
     flexDirection: 'row',
     marginTop: 20,
+    justifyContent: 'center',
   },
   dot: {
     width: 8,
@@ -187,8 +202,3 @@ const styles = StyleSheet.create({
 });
 
 export default AnimatedCarousel;
-
-
-
-
-

@@ -44,9 +44,9 @@ const styles = StyleSheet.create({
     width: 186,
   },
   welcomeText: {
-    fontSize: 24, // Increased font size
-    fontWeight: "500", // Medium font weight
-    color: "#000",
+    fontSize: 20, // Increased font size
+    fontWeight: "600", // Medium font weight
+    color: "#232F34",
   },
   image: {
     width: 96,

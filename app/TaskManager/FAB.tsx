@@ -160,7 +160,7 @@ const styles = StyleSheet.create({
     zIndex: 999,
   },
   fab: {
-    backgroundColor: '#2196F3',
+    backgroundColor: '#ff5733',
     width: 56,
     height: 56,
     borderRadius: 28,
@@ -201,7 +201,7 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#2196F3',
+    color: '#ff5733',
   },
   inputContainer: {
     padding: 16,
@@ -237,7 +237,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#e0e0e0',
   },
   addButton: {
-    backgroundColor: '#2196F3',
+    backgroundColor: '#ff5733',
   },
   buttonText: {
     color: 'white',

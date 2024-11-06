@@ -241,6 +241,7 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     padding: 16,
+    color: "#232F34",
   },
   taskContainer: {
     backgroundColor: '#f5f5f5',
@@ -287,7 +288,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '500',
     marginBottom: 4,
-    color: '#2196F3',
+    color: '#ff5733',
   },
   description: {
     fontSize: 14,
@@ -306,7 +307,7 @@ const styles = StyleSheet.create({
     height: 24,
     borderRadius: 12,
     borderWidth: 2,
-    borderColor: '#2196F3',
+    borderColor: '#ff5733',
     justifyContent: 'center',
     alignItems: 'center',
     padding: 2,
@@ -314,7 +315,7 @@ const styles = StyleSheet.create({
   checkboxInner: {
     width: '100%',
     height: '100%',
-    backgroundColor: '#2196F3',
+    backgroundColor: '#ff5733',
     borderRadius: 8,
   },
   separator: {
