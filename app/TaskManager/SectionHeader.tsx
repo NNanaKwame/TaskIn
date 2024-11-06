@@ -41,8 +41,9 @@ const styles = StyleSheet.create({
   },
   titleText: {
     fontSize: 24,
-    lineHeight: 28,
-    color: "#18181b",
+    fontWeight: 'bold',
+    padding: 16,
+    color: "#3A3A3A",
   },
   iconButton: {
     justifyContent: "center",

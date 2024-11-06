@@ -166,9 +166,9 @@ const TaskList: React.FC = () => {
     };
   }, []);
 
-  const ListHeader = () => (
-    <Text style={styles.header}>Tasks</Text>
-  );
+  // const ListHeader = () => (
+  //   <Text style={styles.header}>Tasks</Text>
+  // );
 
   const renderItem = ({ item }: { item: Task }) => {
     const animatedStyle = {
@@ -214,7 +214,7 @@ const TaskList: React.FC = () => {
           data={tasks}
           renderItem={renderItem}
           keyExtractor={(item) => item.id}
-          ListHeaderComponent={ListHeader}
+          // ListHeaderComponent={ListHeader}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.listContainer}
         />

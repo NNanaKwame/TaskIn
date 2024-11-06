@@ -30,6 +30,7 @@ const AnimatedCarousel = () => {
   const opacity = useSharedValue(1);
   const translateX = useSharedValue(0);
 
+
   const changeSlide = useCallback((direction: number) => {
     scale.value = withSequence(
       withTiming(0.9, { duration: 150 }),
@@ -48,6 +49,7 @@ const AnimatedCarousel = () => {
       );
     }, 150);
   }, []);
+
 
   const nextSlide = useCallback(() => {
     changeSlide(1);

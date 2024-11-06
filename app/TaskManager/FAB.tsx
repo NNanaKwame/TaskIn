@@ -199,15 +199,16 @@ const styles = StyleSheet.create({
     borderBottomColor: '#e0e0e0',
   },
   modalTitle: {
-    fontSize: 20,
+    fontSize: 25,
     fontWeight: 'bold',
     color: '#ff5733',
+    textAlign: 'center',
   },
   inputContainer: {
     padding: 16,
   },
   input: {
-    backgroundColor: 'white',
+    backgroundColor: '#f5f5f5',
     borderRadius: 8,
     padding: 12,
     marginBottom: 16,
