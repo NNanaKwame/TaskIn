@@ -6,7 +6,6 @@ import TopAppBar from "./TaskManager/TopAppBar";
 import CarouselHero from "./TaskManager/CarouselHero";
 import TaskList from "./TaskManager/TaskList";
 import GestureBar from "./TaskManager/GestureBar";
-import FAB from "./TaskManager/FAB";
 
 const TaskManager: React.FC = () => {
   return (
@@ -16,7 +15,6 @@ const TaskManager: React.FC = () => {
       <CarouselHero />
       <TaskList />
       <GestureBar />
-      <FAB />
     </ScrollView>
   );
 };

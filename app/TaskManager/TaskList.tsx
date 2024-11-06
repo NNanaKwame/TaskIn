@@ -9,6 +9,7 @@ import {
   StatusBar,
   Animated,
 } from 'react-native';
+import FAB from "./FAB";
 
 interface Task {
   id: string;
@@ -116,6 +117,16 @@ const TaskList: React.FC = () => {
     },
   ]);
 
+  const handleAddTask = (newTask: { title: string; description: string }) => {
+    const task: Task = {
+      id: Date.now().toString(),
+      title: newTask.title,
+      description: newTask.description,
+      completed: false,
+    };
+    setTasks(currentTasks => [...currentTasks, task]);
+  };
+
   const deleteTimeouts = useRef<TimeoutRefs>({});
 
   const toggleTask = (id: string) => {
@@ -196,27 +207,35 @@ const TaskList: React.FC = () => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="dark-content" />
-      <FlatList
-        data={tasks}
-        renderItem={renderItem}
-        keyExtractor={(item) => item.id}
-        ListHeaderComponent={ListHeader}
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.listContainer}
-      />
-    </SafeAreaView>
+    <View style={styles.mainContainer}>
+      <SafeAreaView style={styles.container}>
+        <StatusBar barStyle="dark-content" />
+        <FlatList
+          data={tasks}
+          renderItem={renderItem}
+          keyExtractor={(item) => item.id}
+          ListHeaderComponent={ListHeader}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.listContainer}
+        />
+      </SafeAreaView>
+      <FAB onAddTask={handleAddTask} />
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
+  mainContainer: {
+    flex: 1,
+    position: 'relative', // Ensures proper stacking context
+  },
   container: {
     flex: 1,
     backgroundColor: '#f5f5f5',
   },
   listContainer: {
     flexGrow: 1,
+    paddingBottom: 80,
   },
   header: {
     fontSize: 24,
