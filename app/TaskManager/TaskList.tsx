@@ -183,16 +183,24 @@ const TaskList: React.FC = () => {
             <View style={styles.square} />
           </View>
           <View style={styles.textContainer}>
-            <Text style={[
-              styles.title,
-              item.completed && styles.completedText
-            ]}>
+            <Text 
+              numberOfLines={1} 
+              ellipsizeMode="tail"
+              style={[
+                styles.title,
+                item.completed && styles.completedText
+              ]}
+            >
               {item.title}
             </Text>
-            <Text style={[
-              styles.description,
-              item.completed && styles.completedText
-            ]}>
+            <Text 
+              numberOfLines={2}
+              ellipsizeMode="tail"
+              style={[
+                styles.description,
+                item.completed && styles.completedText
+              ]}
+            >
               {item.description}
             </Text>
           </View>
@@ -283,6 +291,7 @@ const styles = StyleSheet.create({
   },
   textContainer: {
     flex: 1,
+    marginRight: 8, // Add some spacing before the checkbox
   },
   title: {
     fontSize: 16,

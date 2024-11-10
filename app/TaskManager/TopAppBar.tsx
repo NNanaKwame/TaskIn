@@ -4,7 +4,7 @@ import { View, Text, Image, StyleSheet } from "react-native";
 const TopAppBar: React.FC = () => {
   return (
     <View style={styles.topAppBar}>
-      <View style={styles.leadingTrailingIcons}>
+      {/* <View style={styles.leadingTrailingIcons}>
         <View style={styles.welcomeTextContainer}>
           <Text style={styles.welcomeText}>Welcome, Gideon</Text>
         </View>
@@ -14,7 +14,7 @@ const TopAppBar: React.FC = () => {
           }}
           style={styles.image}
         />
-      </View>
+      </View> */}
       <View style={styles.headlineContainer}>
         <Text style={styles.headline}>Task Highlights</Text>
       </View>
