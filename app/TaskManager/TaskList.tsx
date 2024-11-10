@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -7,150 +7,80 @@ import {
   TouchableOpacity,
   SafeAreaView,
   StatusBar,
-  Animated,
 } from 'react-native';
-import FAB from "./FAB";
+import notifee, { 
+  TimestampTrigger, 
+  TriggerType, 
+  AndroidImportance 
+} from '@notifee/react-native';
+import FAB from "./FAB"; // FAB component for adding tasks
 
+// Define the Task interface
 interface Task {
   id: string;
   title: string;
   description: string;
   completed: boolean;
-  dueDate: Date | null;  // Added dueDate field
+  dueDate: Date | null;
+  notificationId?: string;
 }
-
-interface TimeoutRefs {
-  [key: string]: NodeJS.Timeout;
-}
-
-interface CheckBoxProps {
-  checked: boolean;
-  onPress: () => void;
-}
-
-const CheckBox: React.FC<CheckBoxProps> = ({ checked, onPress }) => {
-  const scaleValue = useRef(new Animated.Value(0)).current;
-  const fadeValue = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    if (checked) {
-      Animated.parallel([
-        Animated.spring(scaleValue, {
-          toValue: 1,
-          useNativeDriver: true,
-          tension: 50,
-          friction: 3,
-        }),
-        Animated.timing(fadeValue, {
-          toValue: 1,
-          duration: 200,
-          useNativeDriver: true,
-        }),
-      ]).start();
-    } else {
-      Animated.parallel([
-        Animated.timing(scaleValue, {
-          toValue: 0,
-          duration: 200,
-          useNativeDriver: true,
-        }),
-        Animated.timing(fadeValue, {
-          toValue: 0,
-          duration: 200,
-          useNativeDriver: true,
-        }),
-      ]).start();
-    }
-  }, [checked]);
-
-  return (
-    <TouchableOpacity
-      onPress={onPress}
-      style={styles.checkboxContainer}
-      activeOpacity={0.6}
-    >
-      <View style={styles.checkbox}>
-        <Animated.View
-          style={[
-            styles.checkboxInner,
-            {
-              transform: [{ scale: scaleValue }],
-              opacity: fadeValue,
-            },
-          ]}
-        />
-      </View>
-    </TouchableOpacity>
-  );
-};
 
 const TaskList: React.FC = () => {
-  const [tasks, setTasks] = useState<Task[]>([
-    {
-      id: '1',
-      title: 'List item',
-      description: 'Supporting line text lorem ipsum dolor sit amet, consectetur.',
-      completed: false,
-      dueDate: new Date(),  // Added dueDate field
-    },
-    {
-      id: '2',
-      title: 'List item',
-      description: 'Supporting line text lorem ipsum dolor sit amet, consectetur.',
-      completed: false,
-      dueDate: new Date(Date.now() + 24 * 60 * 60 * 1000), // Example due date (tomorrow)
-    },
-    {
-      id: '3',
-      title: 'List item',
-      description: 'Supporting line text lorem ipsum dolor sit amet, consectetur.',
-      completed: false,
-      dueDate: new Date(Date.now() + 24 * 60 * 60 * 1000), // Example due date (tomorrow)
-    },
-    {
-      id: '4',
-      title: 'List item',
-      description: 'Supporting line text lorem ipsum dolor sit amet, consectetur.',
-      completed: false,
-      dueDate: new Date(Date.now() + 24 * 60 * 60 * 1000), // Example due date (tomorrow)
-    },
-    {
-      id: '5',
-      title: 'List item',
-      description: 'Supporting line text lorem ipsum dolor sit amet, consectetur.',
-      completed: false,
-      dueDate: new Date(Date.now() + 24 * 60 * 60 * 1000), // Example due date (tomorrow)
-    },
-  ]);
+  const [tasks, setTasks] = useState<Task[]>([]);
 
-  const formatDueDate = (date: Date | null) => {
-    if (!date) return '';
-    const now = new Date();
-    const tomorrow = new Date(now);
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    
-    // Format time
-    const timeString = date.toLocaleTimeString([], { 
-      hour: '2-digit', 
-      minute: '2-digit'
-    });
-    
-    // Check if it's today, tomorrow, or another date
-    if (date.toDateString() === now.toDateString()) {
-      return `Due today at ${timeString}`;
-    } else if (date.toDateString() === tomorrow.toDateString()) {
-      return `Due tomorrow at ${timeString}`;
-    } else {
-      return `Due ${date.toLocaleDateString()} at ${timeString}`;
+  useEffect(() => {
+    // Initialize the Notifee notification channel
+    async function createNotificationChannel() {
+      await notifee.createChannel({
+        id: 'tasks',
+        name: 'Task Notifications',
+        importance: AndroidImportance.HIGH,
+      });
+    }
+    createNotificationChannel();
+
+    // Sample tasks for testing
+    const initializeTasks = [
+      {
+        id: '1',
+        title: 'Sample Task 1',
+        description: 'Description for Task 1.',
+        completed: false,
+        dueDate: new Date(Date.now() + 60 * 1000), // 1 minute from now
+      },
+    ];
+    setTasks(initializeTasks);
+    initializeTasks.forEach(task => scheduleNotification(task));
+  }, []);
+
+  // Function to schedule notifications
+  const scheduleNotification = async (task: Task) => {
+    if (task.dueDate && task.dueDate > new Date()) {
+      const trigger: TimestampTrigger = {
+        type: TriggerType.TIMESTAMP,
+        timestamp: task.dueDate.getTime(),
+      };
+
+      const notificationId = await notifee.createTriggerNotification(
+        {
+          title: `Task Due: ${task.title}`,
+          body: `Don't forget to complete: ${task.description}`,
+          android: {
+            channelId: 'tasks',
+            importance: AndroidImportance.HIGH,
+          },
+        },
+        trigger
+      );
+
+      setTasks(prevTasks => 
+        prevTasks.map(t => (t.id === task.id ? { ...t, notificationId } : t))
+      );
     }
   };
 
-
-  const handleAddTask = (newTask: { 
-    title: string; 
-    description: string;
-    dueDate: Date | null;
-  }) => {
+  // Handle adding a new task with a scheduled notification
+  const handleAddTask = (newTask: { title: string; description: string; dueDate: Date | null; }) => {
     const task: Task = {
       id: Date.now().toString(),
       title: newTask.title,
@@ -158,226 +88,78 @@ const TaskList: React.FC = () => {
       dueDate: newTask.dueDate,
       completed: false,
     };
-    setTasks(currentTasks => [...currentTasks, task]);
+    setTasks(prevTasks => [...prevTasks, task]);
+    scheduleNotification(task);
   };
 
-  const deleteTimeouts = useRef<TimeoutRefs>({});
-
-  const toggleTask = (id: string) => {
-    setTasks(
-      tasks.map((task) => {
-        if (task.id === id) {
-          const newCompleted = !task.completed;
-          
-          // Clear existing timeout if any
-          if (deleteTimeouts.current[id]) {
-            clearTimeout(deleteTimeouts.current[id]);
-          }
-
-          // Set new timeout if task is completed
-          if (newCompleted) {
-            deleteTimeouts.current[id] = setTimeout(() => {
-              setTasks((currentTasks) => 
-                currentTasks.filter((t) => t.id !== id)
-              );
-              delete deleteTimeouts.current[id];
-            }, 3000); // 30 seconds = 30000
-          }
-
-          return { ...task, completed: newCompleted };
-        }
-        return task;
-      })
-    );
-  };
-
-  // Cleanup timeouts on unmount
-  useEffect(() => {
-    return () => {
-      Object.values(deleteTimeouts.current).forEach(timeout => {
-        clearTimeout(timeout);
-      });
-    };
-  }, []);
-
-
-  const renderItem = ({ item }: { item: Task }) => {
-    const animatedStyle = {
-      opacity: item.completed ? 0.6 : 1,
-    };
-
-    return (
-      <Animated.View style={[styles.taskContainer, animatedStyle]}>
-        <View style={styles.taskContent}>
-          <View style={styles.iconContainer}>
-            <View style={styles.triangle} />
-            <View style={styles.square} />
-          </View>
-          <View style={styles.textContainer}>
-            <Text 
-              numberOfLines={1} 
-              ellipsizeMode="tail"
-              style={[
-                styles.title,
-                item.completed && styles.completedText
-              ]}
-            >
-              {item.title}
-            </Text>
-            <Text 
-              numberOfLines={2}
-              ellipsizeMode="tail"
-              style={[
-                styles.description,
-                item.completed && styles.completedText
-              ]}
-            >
-              {item.description}
-            </Text>
-            {item.dueDate && (
-              <Text 
-                style={[
-                  styles.dueDate,
-                  item.completed && styles.completedText
-                ]}
-              >
-                {formatDueDate(item.dueDate)}
-              </Text>
-            )}
-          </View>
-          <CheckBox
-            checked={item.completed}
-            onPress={() => toggleTask(item.id)}
-          />
-        </View>
-        <View style={styles.separator} />
-      </Animated.View>
+  // Mark task as completed and cancel notification if it exists
+  const handleTaskCompletion = async (task: Task) => {
+    if (task.notificationId) {
+      await notifee.cancelNotification(task.notificationId);
+    }
+    setTasks(prevTasks => 
+      prevTasks.map(t => (t.id === task.id ? { ...t, completed: true } : t))
     );
   };
 
   return (
-    <View style={styles.mainContainer}>
-      <SafeAreaView style={styles.container}>
-        <StatusBar barStyle="dark-content" />
-        <FlatList
-          data={tasks}
-          renderItem={renderItem}
-          keyExtractor={(item) => item.id}
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={styles.listContainer}
-        />
-      </SafeAreaView>
+    <SafeAreaView style={styles.container}>
+      <StatusBar barStyle="dark-content" />
+      <FlatList
+        data={tasks}
+        renderItem={({ item }) => (
+          <TouchableOpacity
+            onPress={() => handleTaskCompletion(item)}
+            style={[styles.taskContainer, item.completed && styles.completedTask]}
+          >
+            <Text style={styles.taskTitle}>{item.title}</Text>
+            <Text style={styles.taskDescription}>{item.description}</Text>
+            {item.dueDate && (
+              <Text style={styles.taskDueDate}>
+                Due: {item.dueDate.toLocaleString()}
+              </Text>
+            )}
+          </TouchableOpacity>
+        )}
+        keyExtractor={item => item.id}
+      />
       <FAB onAddTask={handleAddTask} />
-    </View>
+    </SafeAreaView>
   );
 };
 
-
 const styles = StyleSheet.create({
-  mainContainer: {
-    flex: 1,
-    position: 'relative', // Ensures proper stacking context
-  },
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
-  },
-  listContainer: {
-    flexGrow: 1,
-    paddingBottom: 80,
-  },
-  header: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    padding: 16,
-    color: "#232F34",
+    backgroundColor: '#f8f8f8',
   },
   taskContainer: {
-    backgroundColor: '#f5f5f5',
+    padding: 15,
+    margin: 10,
+    backgroundColor: '#ffffff',
+    borderRadius: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 3,
   },
-  taskContent: {
-    flexDirection: 'row',
-    padding: 16,
-    alignItems: 'center',
-  },
-  iconContainer: {
-    width: 40,
-    height: 40,
+  completedTask: {
     backgroundColor: '#e0e0e0',
-    borderRadius: 20,
-    marginRight: 16,
-    justifyContent: 'center',
-    alignItems: 'center',
   },
-  triangle: {
-    width: 0,
-    height: 0,
-    backgroundColor: 'transparent',
-    borderStyle: 'solid',
-    borderLeftWidth: 6,
-    borderRightWidth: 6,
-    borderBottomWidth: 12,
-    borderLeftColor: 'transparent',
-    borderRightColor: 'transparent',
-    borderBottomColor: '#909090',
-    position: 'absolute',
-    top: 8,
+  taskTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#333',
   },
-  square: {
-    width: 12,
-    height: 12,
-    backgroundColor: '#909090',
-    position: 'absolute',
-    bottom: 8,
-  },
-  textContainer: {
-    flex: 1,
-    marginRight: 8, // Add some spacing before the checkbox
-  },
-  title: {
+  taskDescription: {
     fontSize: 16,
-    fontWeight: '500',
-    marginBottom: 4,
-    color: '#ff5733',
+    color: '#666',
   },
-  description: {
+  taskDueDate: {
     fontSize: 14,
-    color: '#666666',
-    marginBottom: 4, // Added margin to separate description from due date
-  },
-  dueDate: {
-    fontSize: 12,
-    fontStyle: 'italic',
-    color: '#888888',
-  },
-  completedText: {
-    textDecorationLine: 'line-through',
-    opacity: 0.6,
-  },
-  checkboxContainer: {
-    marginLeft: 16,
-    padding: 4,
-  },
-  checkbox: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    borderWidth: 2,
-    borderColor: '#ff5733',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 2,
-  },
-  checkboxInner: {
-    width: '100%',
-    height: '100%',
-    backgroundColor: '#ff5733',
-    borderRadius: 8,
-  },
-  separator: {
-    height: 1,
-    backgroundColor: '#e0e0e0',
-    marginLeft: 72,
+    color: '#888',
+    marginTop: 5,
   },
 });
 
