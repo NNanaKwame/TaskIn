@@ -259,13 +259,14 @@ const AnimatedCarousel = () => {
                             style={styles.deleteIcon}
                             onPress={handleDeleteHighlight}
                         >
-                            <MaterialIcons name="delete" size={24} color="red" />
+                            <MaterialIcons name="delete" size={25} color="#ff5733" />
                         </Pressable>
                         <Image
                             source={images[activeIndex].uri}
                             style={styles.image}
                             resizeMode="cover"
                         />
+                        <View style={styles.overlayed} />
                         <Text style={styles.taskText}>{images[activeIndex].task}</Text>
                         <View style={styles.overlay}>
                             <View style={styles.playPauseButton}>
@@ -364,7 +365,7 @@ const styles = StyleSheet.create({
         fontWeight: "500",
     },
     confirmButton: {
-        backgroundColor: "#6200EE",
+        backgroundColor: "#ff5733",
     },
     confirmButtonText: {
         color: "#fff",
@@ -399,7 +400,7 @@ const styles = StyleSheet.create({
     cardContainer: {
         width: CARD_WIDTH,
         height: CARD_HEIGHT,
-        backgroundColor: "white",
+        backgroundColor: "black",
         borderRadius: 15,
         overflow: "hidden",
         elevation: 5,
@@ -423,6 +424,10 @@ const styles = StyleSheet.create({
         justifyContent: "flex-end",
         alignItems: "flex-end",
         padding: 10,
+    },
+    overlayed: {
+      ...StyleSheet.absoluteFillObject,
+      backgroundColor: 'rgba(0,0,0,0.3)',
     },
     deleteIcon: { position: "absolute", top: 10, right: 10, zIndex: 1 },
     playPauseButton: {
