@@ -16,7 +16,9 @@
   },
   "dependencies": {
     "@expo/vector-icons": "^14.0.2",
+    "@notifee/react-native": "^9.1.2",
     "@react-native-community/checkbox": "^0.5.17",
+    "@react-native-community/datetimepicker": "^8.2.0",
     "@react-navigation/native": "^6.0.2",
     "axios": "^1.7.7",
     "expo": "~51.0.28",

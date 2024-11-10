@@ -10,16 +10,25 @@ import {
   TouchableWithoutFeedback,
   Animated,
   Easing,
+  Platform,
 } from 'react-native';
+import DateTimePicker from '@react-native-community/datetimepicker';
 
 interface FABProps {
-  onAddTask: (task: { title: string; description: string }) => void;
+  onAddTask: (task: { 
+    title: string; 
+    description: string;
+    dueDate: Date | null;
+  }) => void;
 }
 
 const FAB: React.FC<FABProps> = ({ onAddTask }) => {
   const [modalVisible, setModalVisible] = useState(false);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
+  const [dueDate, setDueDate] = useState<Date | null>(null);
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [showTimePicker, setShowTimePicker] = useState(false);
   const scaleAnimation = useRef(new Animated.Value(0)).current;
   const rotateAnimation = useRef(new Animated.Value(0)).current;
 
@@ -28,9 +37,11 @@ const FAB: React.FC<FABProps> = ({ onAddTask }) => {
       onAddTask({
         title: title.trim(),
         description: description.trim(),
+        dueDate,
       });
       setTitle('');
       setDescription('');
+      setDueDate(null);
       closeModal();
     }
   };
@@ -53,6 +64,29 @@ const FAB: React.FC<FABProps> = ({ onAddTask }) => {
     }).start(() => setModalVisible(false));
   };
 
+  const handleDateChange = (event: any, selectedDate?: Date) => {
+    setShowDatePicker(Platform.OS === 'ios');
+    if (selectedDate) {
+      const currentTime = dueDate || new Date();
+      selectedDate.setHours(currentTime.getHours());
+      selectedDate.setMinutes(currentTime.getMinutes());
+      setDueDate(selectedDate);
+      if (Platform.OS === 'android' && !dueDate) {
+        setShowTimePicker(true);
+      }
+    }
+  };
+
+  const handleTimeChange = (event: any, selectedTime?: Date) => {
+    setShowTimePicker(Platform.OS === 'ios');
+    if (selectedTime) {
+      const newDueDate = dueDate || new Date();
+      newDueDate.setHours(selectedTime.getHours());
+      newDueDate.setMinutes(selectedTime.getMinutes());
+      setDueDate(newDueDate);
+    }
+  };
+
   const spin = rotateAnimation.interpolate({
     inputRange: [0, 1],
     outputRange: ['0deg', '45deg'],
@@ -66,6 +100,11 @@ const FAB: React.FC<FABProps> = ({ onAddTask }) => {
       useNativeDriver: true,
     }).start();
   }, [modalVisible]);
+
+  const formatDateTime = (date: Date | null) => {
+    if (!date) return 'Not set';
+    return date.toLocaleString();
+  };
 
   return (
     <>
@@ -126,7 +165,37 @@ const FAB: React.FC<FABProps> = ({ onAddTask }) => {
                     multiline
                     numberOfLines={4}
                   />
+
+                  <View style={styles.dateTimeContainer}>
+                    <Text style={styles.dateTimeLabel}>Due Date & Time:</Text>
+                    <Text style={styles.dateTimeValue}>
+                      {formatDateTime(dueDate)}
+                    </Text>
+                    <View style={styles.dateTimeButtons}>
+                      <TouchableOpacity
+                        style={styles.dateTimeButton}
+                        onPress={() => setShowDatePicker(true)}
+                      >
+                        <Text style={styles.dateTimeButtonText}>Set Date</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        style={styles.dateTimeButton}
+                        onPress={() => setShowTimePicker(true)}
+                      >
+                        <Text style={styles.dateTimeButtonText}>Set Time</Text>
+                      </TouchableOpacity>
+                    </View>
+                  </View>
                 </View>
+
+                {(showDatePicker || showTimePicker) && (
+                  <DateTimePicker
+                    value={dueDate || new Date()}
+                    mode={showDatePicker ? 'date' : 'time'}
+                    minimumDate={new Date()}
+                    onChange={showDatePicker ? handleDateChange : handleTimeChange}
+                  />
+                )}
 
                 <View style={styles.buttonContainer}>
                   <TouchableOpacity
@@ -151,6 +220,7 @@ const FAB: React.FC<FABProps> = ({ onAddTask }) => {
     </>
   );
 };
+
 
 const styles = StyleSheet.create({
   fabContainer: {
@@ -243,6 +313,41 @@ const styles = StyleSheet.create({
   buttonText: {
     color: 'white',
     fontSize: 16,
+    fontWeight: '500',
+  },
+  dateTimeContainer: {
+    backgroundColor: '#f5f5f5',
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
+  },
+  dateTimeLabel: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: '#333',
+    marginBottom: 8,
+  },
+  dateTimeValue: {
+    fontSize: 16,
+    color: '#666',
+    marginBottom: 12,
+  },
+  dateTimeButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  dateTimeButton: {
+    backgroundColor: '#ff5733',
+    padding: 8,
+    borderRadius: 6,
+    flex: 0.48,
+  },
+  dateTimeButtonText: {
+    color: 'white',
+    textAlign: 'center',
+    fontSize: 14,
     fontWeight: '500',
   },
 });

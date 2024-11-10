@@ -16,6 +16,7 @@ interface Task {
   title: string;
   description: string;
   completed: boolean;
+  dueDate: Date | null;  // Added dueDate field
 }
 
 interface TimeoutRefs {
@@ -90,38 +91,71 @@ const TaskList: React.FC = () => {
       title: 'List item',
       description: 'Supporting line text lorem ipsum dolor sit amet, consectetur.',
       completed: false,
+      dueDate: new Date(),  // Added dueDate field
     },
     {
       id: '2',
       title: 'List item',
       description: 'Supporting line text lorem ipsum dolor sit amet, consectetur.',
       completed: false,
+      dueDate: new Date(Date.now() + 24 * 60 * 60 * 1000), // Example due date (tomorrow)
     },
     {
       id: '3',
       title: 'List item',
       description: 'Supporting line text lorem ipsum dolor sit amet, consectetur.',
       completed: false,
+      dueDate: new Date(Date.now() + 24 * 60 * 60 * 1000), // Example due date (tomorrow)
     },
     {
       id: '4',
       title: 'List item',
       description: 'Supporting line text lorem ipsum dolor sit amet, consectetur.',
       completed: false,
+      dueDate: new Date(Date.now() + 24 * 60 * 60 * 1000), // Example due date (tomorrow)
     },
     {
       id: '5',
       title: 'List item',
       description: 'Supporting line text lorem ipsum dolor sit amet, consectetur.',
       completed: false,
+      dueDate: new Date(Date.now() + 24 * 60 * 60 * 1000), // Example due date (tomorrow)
     },
   ]);
 
-  const handleAddTask = (newTask: { title: string; description: string }) => {
+  const formatDueDate = (date: Date | null) => {
+    if (!date) return '';
+    const now = new Date();
+    const tomorrow = new Date(now);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    
+    // Format time
+    const timeString = date.toLocaleTimeString([], { 
+      hour: '2-digit', 
+      minute: '2-digit'
+    });
+    
+    // Check if it's today, tomorrow, or another date
+    if (date.toDateString() === now.toDateString()) {
+      return `Due today at ${timeString}`;
+    } else if (date.toDateString() === tomorrow.toDateString()) {
+      return `Due tomorrow at ${timeString}`;
+    } else {
+      return `Due ${date.toLocaleDateString()} at ${timeString}`;
+    }
+  };
+
+
+  const handleAddTask = (newTask: { 
+    title: string; 
+    description: string;
+    dueDate: Date | null;
+  }) => {
     const task: Task = {
       id: Date.now().toString(),
       title: newTask.title,
       description: newTask.description,
+      dueDate: newTask.dueDate,
       completed: false,
     };
     setTasks(currentTasks => [...currentTasks, task]);
@@ -166,9 +200,6 @@ const TaskList: React.FC = () => {
     };
   }, []);
 
-  // const ListHeader = () => (
-  //   <Text style={styles.header}>Tasks</Text>
-  // );
 
   const renderItem = ({ item }: { item: Task }) => {
     const animatedStyle = {
@@ -203,6 +234,16 @@ const TaskList: React.FC = () => {
             >
               {item.description}
             </Text>
+            {item.dueDate && (
+              <Text 
+                style={[
+                  styles.dueDate,
+                  item.completed && styles.completedText
+                ]}
+              >
+                {formatDueDate(item.dueDate)}
+              </Text>
+            )}
           </View>
           <CheckBox
             checked={item.completed}
@@ -222,7 +263,6 @@ const TaskList: React.FC = () => {
           data={tasks}
           renderItem={renderItem}
           keyExtractor={(item) => item.id}
-          // ListHeaderComponent={ListHeader}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.listContainer}
         />
@@ -231,6 +271,7 @@ const TaskList: React.FC = () => {
     </View>
   );
 };
+
 
 const styles = StyleSheet.create({
   mainContainer: {
@@ -302,6 +343,12 @@ const styles = StyleSheet.create({
   description: {
     fontSize: 14,
     color: '#666666',
+    marginBottom: 4, // Added margin to separate description from due date
+  },
+  dueDate: {
+    fontSize: 12,
+    fontStyle: 'italic',
+    color: '#888888',
   },
   completedText: {
     textDecorationLine: 'line-through',
