@@ -6,6 +6,7 @@ import CarouselHero from "./TaskManager/CarouselHero";
 import TaskList from "./TaskManager/TaskList";
 import GestureBar from "./TaskManager/GestureBar";
 import SectionHeader from "./TaskManager/SectionHeader";
+import Task  from "./TaskManager/Test";
 
 const TaskManager: React.FC = () => {
   return (
@@ -13,9 +14,10 @@ const TaskManager: React.FC = () => {
       <View style={styles.container}>
         <TopAppBar />
         <CarouselHero />
-        <SectionHeader />
+        {/* <SectionHeader /> */}
         <View style={styles.taskListContainer}>
-          <TaskList />
+          {/* <TaskList /> */}
+          <Task />
         </View>
         <GestureBar />
       </View>
