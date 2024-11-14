@@ -15,8 +15,8 @@ import {
 import DateTimePicker from '@react-native-community/datetimepicker';
 
 interface FABProps {
-  onAddTask: (task: { 
-    title: string; 
+  onAddTask: (task: {
+    title: string;
     description: string;
     dueDate: Date | null;
   }) => void;
@@ -65,22 +65,21 @@ const FAB: React.FC<FABProps> = ({ onAddTask }) => {
   };
 
   const handleDateChange = (event: any, selectedDate?: Date) => {
-    setShowDatePicker(Platform.OS === 'ios');
+    setShowDatePicker(false);
     if (selectedDate) {
-      const currentTime = dueDate || new Date();
-      selectedDate.setHours(currentTime.getHours());
-      selectedDate.setMinutes(currentTime.getMinutes());
-      setDueDate(selectedDate);
-      if (Platform.OS === 'android' && !dueDate) {
-        setShowTimePicker(true);
+      const newDueDate = new Date(selectedDate);
+      if (dueDate) {
+        newDueDate.setHours(dueDate.getHours());
+        newDueDate.setMinutes(dueDate.getMinutes());
       }
+      setDueDate(newDueDate);
     }
   };
 
   const handleTimeChange = (event: any, selectedTime?: Date) => {
-    setShowTimePicker(Platform.OS === 'ios');
-    if (selectedTime) {
-      const newDueDate = dueDate || new Date();
+    setShowTimePicker(false);
+    if (selectedTime && dueDate) {
+      const newDueDate = new Date(dueDate);
       newDueDate.setHours(selectedTime.getHours());
       newDueDate.setMinutes(selectedTime.getMinutes());
       setDueDate(newDueDate);
@@ -127,7 +126,7 @@ const FAB: React.FC<FABProps> = ({ onAddTask }) => {
         <TouchableWithoutFeedback onPress={closeModal}>
           <View style={styles.modalOverlay}>
             <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-              <Animated.View 
+              <Animated.View
                 style={[
                   styles.modalContent,
                   {
@@ -155,7 +154,7 @@ const FAB: React.FC<FABProps> = ({ onAddTask }) => {
                     onChangeText={setTitle}
                     autoFocus
                   />
-                  
+
                   <TextInput
                     style={[styles.input, styles.textArea]}
                     placeholder="Description"
@@ -179,21 +178,36 @@ const FAB: React.FC<FABProps> = ({ onAddTask }) => {
                         <Text style={styles.dateTimeButtonText}>Set Date</Text>
                       </TouchableOpacity>
                       <TouchableOpacity
-                        style={styles.dateTimeButton}
-                        onPress={() => setShowTimePicker(true)}
+                        style={[
+                          styles.dateTimeButton,
+                          !dueDate && styles.disabledButton
+                        ]}
+                        onPress={() => dueDate && setShowTimePicker(true)}
+                        disabled={!dueDate}
                       >
                         <Text style={styles.dateTimeButtonText}>Set Time</Text>
                       </TouchableOpacity>
+
                     </View>
                   </View>
                 </View>
 
-                {(showDatePicker || showTimePicker) && (
+                {showDatePicker && (
                   <DateTimePicker
                     value={dueDate || new Date()}
-                    mode={showDatePicker ? 'date' : 'time'}
+                    mode="date"
+                    display="default"
+                    onChange={handleDateChange}
                     minimumDate={new Date()}
-                    onChange={showDatePicker ? handleDateChange : handleTimeChange}
+                  />
+                )}
+
+                {showTimePicker && (
+                  <DateTimePicker
+                    value={dueDate || new Date()}
+                    mode="time"
+                    display="default"
+                    onChange={handleTimeChange}
                   />
                 )}
 
@@ -204,7 +218,7 @@ const FAB: React.FC<FABProps> = ({ onAddTask }) => {
                   >
                     <Text style={styles.buttonText}>Cancel</Text>
                   </TouchableOpacity>
-                  
+
                   <TouchableOpacity
                     style={[styles.button, styles.addButton]}
                     onPress={handleSubmit}
@@ -349,6 +363,10 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontSize: 14,
     fontWeight: '500',
+  },
+  disabledButton: {
+    backgroundColor: '#cccccc',
+    opacity: 0.6,
   },
 });
 
