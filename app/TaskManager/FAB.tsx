@@ -31,9 +31,10 @@ const FAB: React.FC<FABProps> = ({ onAddTask }) => {
   const [showTimePicker, setShowTimePicker] = useState(false);
   const scaleAnimation = useRef(new Animated.Value(0)).current;
   const rotateAnimation = useRef(new Animated.Value(0)).current;
+  const MAX_WORDS: number = 40;
 
   const handleSubmit = () => {
-    if (title.trim()) {
+    if (title.trim() && description.trim().split(' ').length <= MAX_WORDS) {
       onAddTask({
         title: title.trim(),
         description: description.trim(),
@@ -105,6 +106,9 @@ const FAB: React.FC<FABProps> = ({ onAddTask }) => {
     return date.toLocaleString();
   };
 
+  const wordCount = description.trim().split(/\s+/).filter(Boolean).length;
+  const isAddButtonDisabled = wordCount > MAX_WORDS;
+
   return (
     <>
       <TouchableOpacity
@@ -164,6 +168,9 @@ const FAB: React.FC<FABProps> = ({ onAddTask }) => {
                     multiline
                     numberOfLines={4}
                   />
+                  <Text style={styles.wordCounter}>
+                    {wordCount} / {MAX_WORDS} words
+                  </Text>
 
                   <View style={styles.dateTimeContainer}>
                     <Text style={styles.dateTimeLabel}>Due Date & Time:</Text>
@@ -220,8 +227,13 @@ const FAB: React.FC<FABProps> = ({ onAddTask }) => {
                   </TouchableOpacity>
 
                   <TouchableOpacity
-                    style={[styles.button, styles.addButton]}
+                    style={[
+                      styles.button,
+                      styles.addButton,
+                      isAddButtonDisabled && styles.disabledButton
+                    ]}
                     onPress={handleSubmit}
+                    disabled={isAddButtonDisabled}
                   >
                     <Text style={styles.buttonText}>Add Task</Text>
                   </TouchableOpacity>
@@ -234,7 +246,6 @@ const FAB: React.FC<FABProps> = ({ onAddTask }) => {
     </>
   );
 };
-
 
 const styles = StyleSheet.create({
   fabContainer: {
@@ -304,6 +315,12 @@ const styles = StyleSheet.create({
   textArea: {
     height: 100,
     textAlignVertical: 'top',
+  },
+  wordCounter: {
+    fontSize: 14,
+    color: '#666',
+    marginBottom: 16,
+    textAlign: 'right',
   },
   buttonContainer: {
     flexDirection: 'row',
