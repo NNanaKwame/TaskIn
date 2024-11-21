@@ -75,6 +75,7 @@ const AnimatedCarousel = () => {
     const [isAutoplay, setIsAutoplay] = useState(true);
     const [newTask, setNewTask] = useState("");
     const [showModal, setShowModal] = useState(false);
+    const [showAddHighlightModal, setShowAddHighlightModal] = useState(false);
     const [modalTitle, setModalTitle] = useState("");
     const [modalDescription, setModalDescription] = useState("");
     const [modalCancelButtonText, setModalCancelButtonText] = useState("");
@@ -170,6 +171,7 @@ const AnimatedCarousel = () => {
         });
 
         if (!result.canceled && result.assets.length > 0) {
+            setShowAddHighlightModal(false); // Close the add highlight modal
             showConfirmationModal(
                 "Add Highlight",
                 "Are you sure you want to add this highlight?",
@@ -301,6 +303,40 @@ const AnimatedCarousel = () => {
         </Modal>
     );
 
+    const renderAddHighlightModal = () => (
+        <Modal visible={showAddHighlightModal} transparent animationType="fade">
+            <View style={styles.modalBackground}>
+                <View style={styles.modalContainer}>
+                    <Text style={styles.modalTitle}>Add New Highlight</Text>
+                    <TextInput
+                        placeholder="Enter task description"
+                        value={newTask}
+                        onChangeText={setNewTask}
+                        style={styles.modalTaskInput}
+                        maxLength={50}
+                    />
+                    <Text style={styles.characterCount}>
+                        {50 - newTask.length} characters remaining
+                    </Text>
+                    <View style={styles.modalButtonContainer}>
+                        <Pressable
+                            style={[styles.modalButton, styles.cancelButton]}
+                            onPress={() => setShowAddHighlightModal(false)}
+                        >
+                            <Text style={styles.cancelButtonText}>Cancel</Text>
+                        </Pressable>
+                        <Pressable
+                            style={[styles.modalButton, styles.confirmButton]}
+                            onPress={handleImagePick}
+                        >
+                            <Text style={styles.confirmButtonText}>Add</Text>
+                        </Pressable>
+                    </View>
+                </View>
+            </View>
+        </Modal>
+    );
+
     const renderDots = () => (
         <View style={styles.dotsContainer}>
             {highlights.map((_, index) => (
@@ -401,23 +437,15 @@ const AnimatedCarousel = () => {
                 </View>
                 {renderDots()}
 
-                <View style={styles.uploadContainer}>
-                    <TextInput
-                        placeholder="Enter task highlight"
-                        value={newTask}
-                        onChangeText={setNewTask}
-                        style={styles.taskInput}
-                        maxLength={150}
-                    />
-                    <Pressable
-                        style={[styles.addButton, { borderRadius: 10 }]}
-                        onPress={handleImagePick}
-                    >
-                        <Text style={styles.addButtonText}>Add Highlight</Text>
-                    </Pressable>
-                </View>
+                <Pressable
+                    style={styles.addButton}
+                    onPress={() => setShowAddHighlightModal(true)}
+                >
+                    <Text style={styles.addButtonText}>Add New Highlight</Text>
+                </Pressable>
             </View>
             {renderModal()}
+            {renderAddHighlightModal()}
         </View>
     );
 };
@@ -466,6 +494,26 @@ const styles = StyleSheet.create({
         marginHorizontal: 8,
         alignItems: "center",
     },
+    modalTaskInput: {
+        borderWidth: 1,
+        borderColor: "#ccc",
+        borderRadius: 4,
+        padding: 10,
+        marginBottom: 20,
+        marginTop: 10,
+        width: "90%",
+    },
+    modalAddButton: {
+        backgroundColor: "#4CAF50",
+        paddingVertical: 10,
+        paddingHorizontal: 20,
+        borderRadius: 4,
+        marginBottom: 20,
+    },
+    modalAddButtonText: {
+        color: "#fff",
+        fontWeight: "500",
+    },
     cancelButton: {
         backgroundColor: "#E0E0E0",
     },
@@ -480,12 +528,19 @@ const styles = StyleSheet.create({
         color: "#fff",
         fontWeight: "500",
     },
+    characterCount: {
+        fontSize: 12,
+        color: "#666",
+        marginBottom: 10,
+        alignSelf: "flex-end",
+    },
     addButton: {
         backgroundColor: "#ff5733",
         paddingVertical: 10,
         paddingHorizontal: 20,
         borderRadius: 10,
         marginBottom: 20,
+        marginTop: 10,
     },
     addButtonText: {
         color: "#fff",
