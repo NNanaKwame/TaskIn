@@ -217,6 +217,12 @@ const Task: React.FC = () => {
     }) => {
         try {
             setLoading(true);
+            console.log('Adding new task:', {
+                title: newTask.title,
+                description: newTask.description,
+                dueDate: newTask.dueDate?.toISOString()
+            });
+
             const taskData = {
                 title: newTask.title,
                 description: newTask.description,
@@ -225,6 +231,7 @@ const Task: React.FC = () => {
 
             const response = await axios.post(`${API_BASE_URL}/tasks`, taskData);
             const createdTask = response.data;
+            console.log('Task created successfully:', createdTask);
 
             // Schedule notification if there's a due date
             if (newTask.dueDate) {
@@ -233,6 +240,8 @@ const Task: React.FC = () => {
                     dueDate: newTask.dueDate,
                 });
                 if (notificationId) {
+                    console.log('Notification scheduled with ID:', notificationId);
+                    console.log('Notification scheduled for:', new Date(newTask.dueDate.getTime() - 15 * 60000));
                     // Update the task with notification ID
                     await axios.put(`${API_BASE_URL}/tasks/${createdTask.id}`, {
                         ...createdTask,
@@ -251,6 +260,7 @@ const Task: React.FC = () => {
             setLoading(false);
         }
     };
+
 
     // Delete task
     const deleteTask = async (id: string) => {
@@ -338,47 +348,122 @@ const toggleTask = async (id: string) => {
     };
 
 
-    // Schedule a notification for a task
+    // Schedule notifications for a task
     const scheduleNotification = async (task: Task) => {
         if (!task.dueDate) return;
 
         try {
-            // Calculate notification time (15 minutes before due date)
-            const notificationTime = new Date(task.dueDate.getTime() - 15 * 60000);
+            const now = new Date();
+            const dueDate = new Date(task.dueDate);
+            
+            // Ensure we're working with fresh timestamps
+            const currentTimestamp = now.getTime();
+            const dueTimestamp = dueDate.getTime();
+            
+            // Calculate early notification time (15 minutes before)
+            const fifteenMinutes = 15 * 60 * 1000; // 15 minutes in milliseconds
+            const earlyNotificationTimestamp = dueTimestamp - fifteenMinutes;
+            const earlyNotificationTime = new Date(earlyNotificationTimestamp);
 
-            // Don't schedule if the time has already passed
-            if (notificationTime <= new Date()) return;
-
-            const notificationId = await Notifications.scheduleNotificationAsync({
-                content: {
-                    title: `Task Due Soon: ${task.title}`,
-                    body: task.description,
-                    data: { taskId: task.id },
-                    sound: true,
-                    priority: Notifications.AndroidNotificationPriority.HIGH,
-                },
-                trigger: {
-                    date: notificationTime,
-                },
+            console.log('Scheduling details:', {
+                currentTime: now.toISOString(),
+                dueDate: dueDate.toISOString(),
+                earlyNotificationTime: earlyNotificationTime.toISOString(),
+                timeUntilDue: dueTimestamp - currentTimestamp,
+                timeUntilEarlyNotification: earlyNotificationTimestamp - currentTimestamp
             });
 
-            return notificationId;
+            let notificationIds = [];
+
+            // Schedule early notification (15 mins before)
+            if (earlyNotificationTimestamp > currentTimestamp) {
+                // Set up console log for early notification
+                const timeUntilEarlyNotification = earlyNotificationTimestamp - currentTimestamp;
+                setTimeout(() => {
+                    const triggerTime = new Date();
+                    console.log('🔔 EARLY WARNING NOTIFICATION WOULD TRIGGER NOW:', {
+                        taskTitle: task.title,
+                        taskDescription: task.description,
+                        scheduledFor: earlyNotificationTime.toISOString(),
+                        actualTriggerTime: triggerTime.toISOString(),
+                        timeDrift: triggerTime.getTime() - earlyNotificationTimestamp
+                    });
+                }, timeUntilEarlyNotification);
+
+                const earlyNotificationId = await Notifications.scheduleNotificationAsync({
+                    content: {
+                        title: `Task Due Soon: ${task.title}`,
+                        body: `This task is due in 15 minutes!\n${task.description}`,
+                        data: { taskId: task.id },
+                        sound: true,
+                        priority: Notifications.AndroidNotificationPriority.HIGH,
+                    },
+                    trigger: {
+                        date: earlyNotificationTime,
+                    },
+                });
+                notificationIds.push(earlyNotificationId);
+            }
+
+            // Schedule due time notification
+            if (dueTimestamp > currentTimestamp) {
+                // Set up console log for due time notification
+                const timeUntilDue = dueTimestamp - currentTimestamp;
+                setTimeout(() => {
+                    const triggerTime = new Date();
+                    console.log('🔔 DUE TIME NOTIFICATION WOULD TRIGGER NOW:', {
+                        taskTitle: task.title,
+                        taskDescription: task.description,
+                        scheduledFor: dueDate.toISOString(),
+                        actualTriggerTime: triggerTime.toISOString(),
+                        timeDrift: triggerTime.getTime() - dueTimestamp
+                    });
+                }, timeUntilDue);
+
+                const dueNotificationId = await Notifications.scheduleNotificationAsync({
+                    content: {
+                        title: `Task Due Now: ${task.title}`,
+                        body: `This task is due now!\n${task.description}`,
+                        data: { taskId: task.id },
+                        sound: true,
+                        priority: Notifications.AndroidNotificationPriority.HIGH,
+                    },
+                    trigger: {
+                        date: dueDate,
+                    },
+                });
+                notificationIds.push(dueNotificationId);
+            }
+
+            console.log('Notifications scheduled successfully:', {
+                notificationIds,
+                earlyNotificationTime: earlyNotificationTime.toISOString(),
+                dueTime: dueDate.toISOString()
+            });
+
+            // Return combined notification IDs as a comma-separated string
+            return notificationIds.join(',');
         } catch (error) {
-            console.error('Error scheduling notification:', error);
+            console.error('Error scheduling notifications:', error);
             return undefined;
         }
     };
 
-    // Cancel a scheduled notification
-    const cancelNotification = async (notificationId?: string) => {
-        if (notificationId) {
+    // Update the cancelNotification function to handle multiple IDs
+    const cancelNotification = async (notificationIds?: string) => {
+        if (notificationIds) {
             try {
-                await Notifications.cancelScheduledNotificationAsync(notificationId);
+                const ids = notificationIds.split(',');
+                for (const id of ids) {
+                    await Notifications.cancelScheduledNotificationAsync(id);
+                    console.log('Cancelled notification:', id);
+                }
             } catch (error) {
-                console.error('Error canceling notification:', error);
+                console.error('Error canceling notifications:', error);
             }
         }
     };
+
 
     // Cleanup timeouts on unmount
     useEffect(() => {
