@@ -18,7 +18,8 @@ import * as Device from 'expo-device';
 import FAB from "./FAB";
 
 // API base URL
-const API_BASE_URL = 'http://10.0.2.2:5000';
+// const API_BASE_URL = 'http://10.0.2.2:5000';
+const API_BASE_URL = 'https://taskin-backend.onrender.com';
 
 // Configure notifications
 Notifications.setNotificationHandler({

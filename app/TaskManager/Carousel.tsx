@@ -1,5 +1,4 @@
 import React, { useState, useCallback, useEffect } from "react";
-import axios from "axios";
 import {
     StyleSheet,
     View,
@@ -19,6 +18,8 @@ import Animated, {
     withSpring,
     withSequence,
 } from "react-native-reanimated";
+import * as SQLite from 'expo-sqlite';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface Highlight {
     id: string;
@@ -26,42 +27,52 @@ interface Highlight {
     task_description: string;
 }
 
-// const API_BASE_URL = 'http://10.0.2.2:5000';
-const API_BASE_URL = 'https://taskin-backend.onrender.com';
+const db = SQLite.openDatabaseSync('highlights.db');
+
+// Database initialization
+const initDB = () => {
+        db.execAsync(`
+            PRAGMA journal_mode = WAL;
+            CREATE TABLE IF NOT EXISTS highlights (id INTEGER PRIMARY KEY AUTOINCREMENT, image_path TEXT, task_description TEXT);
+            INSERT INTO highlights (image_path, task_description) VALUES (./assets/images/1.jpg, New TaskDescription);
+            `
+        );
+        console.log('Database initialized');
+};
+const API_BASE_URL = 'http://10.0.2.2:5000';
 
 // API service functions
 const api = {
-    async fetchHighlights() {
-        try {
-            const response = await axios.get(`${API_BASE_URL}/highlights`);
-            return response.data;
-        } catch (error) {
-            console.error('Error fetching highlights:', error);
-            throw error;
-        }
-    },
-
-    async createHighlight(formData: FormData) {
-        try {
-            const response = await axios.post(`${API_BASE_URL}/highlights`, formData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                },
+    async fetchHighlights(): Promise<Highlight[]> {
+        return new Promise((resolve, reject) => {
+            db.withTransactionAsync(async () => {
+                db.getAllAsync(
+                    'SELECT * FROM highlights',
+                );
             });
-            return response.data;
-        } catch (error) {
-            console.error('Error creating highlight:', error);
-            throw error;
-        }
+        });
     },
 
-    async deleteHighlight(id: string) {
-        try {
-            await axios.delete(`${API_BASE_URL}/highlights/${id}`);
-        } catch (error) {
-            console.error('Error deleting highlight:', error);
-            throw error;
-        }
+    async createHighlight(imageUri: string, taskDescription: string): Promise<void> {
+        return new Promise((resolve, reject) => {
+            db.withTransactionAsync(async () => {
+                db.runAsync(
+                    'INSERT INTO highlights (image_path, task_description) VALUES (?, ?)',
+                    [imageUri, taskDescription],
+                );
+            });
+        });
+    },
+
+    async deleteHighlight(id: string): Promise<void> {
+        return new Promise((resolve, reject) => {
+            db.withTransactionAsync(async () => {
+                db.runAsync(
+                    'DELETE FROM highlights WHERE id = ?',
+                    [id],
+                );
+            });
+        });
     }
 };
 
@@ -81,24 +92,25 @@ const AnimatedCarousel = () => {
     const [modalDescription, setModalDescription] = useState("");
     const [modalCancelButtonText, setModalCancelButtonText] = useState("");
     const [modalConfirmButtonText, setModalConfirmButtonText] = useState("");
-    const [modalConfirmAction, setModalConfirmAction] = useState<() => void>(
-        () => { }
-    );
+    const [modalConfirmAction, setModalConfirmAction] = useState<() => void>(() => {});
     const [isLoading, setIsLoading] = useState(true);
 
     const scale = useSharedValue(1);
     const opacity = useSharedValue(1);
     const translateX = useSharedValue(0);
 
+
     useEffect(() => {
+        initDB();
         fetchHighlights();
+        loadAutoplayState();
     }, []);
 
     const fetchHighlights = async () => {
         try {
             setIsLoading(true);
             const data = await api.fetchHighlights();
-            setHighlights(data as Highlight[]);
+            setHighlights(data);
             setIsLoading(false);
         } catch (error) {
             showConfirmationModal(
@@ -106,12 +118,30 @@ const AnimatedCarousel = () => {
                 "Failed to fetch highlights. Please try again.",
                 "OK",
                 "",
-                () => { }
+                () => {}
             );
             setIsLoading(false);
         }
     };
 
+    const loadAutoplayState = async () => {
+        try {
+            const value = await AsyncStorage.getItem('@autoplay');
+            if (value !== null) {
+                setIsAutoplay(JSON.parse(value));
+            }
+        } catch (error) {
+            console.error('Error loading autoplay state:', error);
+        }
+    };
+
+    const saveAutoplayState = async (state: boolean) => {
+        try {
+            await AsyncStorage.setItem('@autoplay', JSON.stringify(state));
+        } catch (error) {
+            console.error('Error saving autoplay state:', error);
+        }
+    };
 
     const changeSlide = useCallback(
         (direction: number) => {
@@ -161,7 +191,7 @@ const AnimatedCarousel = () => {
                 "Permission required to pick images",
                 "OK",
                 "",
-                () => { }
+                () => {}
             );
             return;
         }
@@ -172,7 +202,7 @@ const AnimatedCarousel = () => {
         });
 
         if (!result.canceled && result.assets.length > 0) {
-            setShowAddHighlightModal(false); // Close the add highlight modal
+            setShowAddHighlightModal(false);
             showConfirmationModal(
                 "Add Highlight",
                 "Are you sure you want to add this highlight?",
@@ -180,20 +210,8 @@ const AnimatedCarousel = () => {
                 "Add",
                 async () => {
                     try {
-                        const formData = new FormData();
                         const imageUri = result.assets[0].uri;
-                        const filename = imageUri.split('/').pop() || 'highlight.jpg';
-                        const match = /\.(\w+)$/.exec(filename);
-                        const type = match ? `image/${match[1]}` : 'image/jpeg';
-
-                        formData.append('image', {
-                            uri: imageUri,
-                            name: filename,
-                            type,
-                        } as any);
-                        formData.append('task_description', newTask || 'New Task');
-
-                        await api.createHighlight(formData);
+                        await api.createHighlight(imageUri, newTask || 'New Task');
                         await fetchHighlights();
                         setNewTask("");
                     } catch (error) {
@@ -202,7 +220,7 @@ const AnimatedCarousel = () => {
                             "Failed to add highlight. Please try again.",
                             "OK",
                             "",
-                            () => { }
+                            () => {}
                         );
                     }
                 }
