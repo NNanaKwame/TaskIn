@@ -598,6 +598,16 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontWeight: "500",
   },
+  errorContainer: {
+    backgroundColor: '#ffebee',
+    padding: 8,
+    margin: 8,
+    borderRadius: 4,
+  },
+  errorText: {
+    color: '#c62828',
+    textAlign: 'center',
+  },
 });
 
 export default TaskList;

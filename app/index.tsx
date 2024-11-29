@@ -2,10 +2,12 @@ import React from "react";
 import { View, StyleSheet } from "react-native";
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import TopAppBar from "./TaskManager/TopAppBar";
-import CarouselHero from "./TaskManager/CarouselHero";
+// import CarouselHero from "./TaskManager/CarouselHero";
 import TaskList from "./TaskManager/TaskList";
 import GestureBar from "./TaskManager/GestureBar";
 import SectionHeader from "./TaskManager/SectionHeader";
+import Task  from "./TaskManager/Test";
+import CarouselHero from "./TaskManager/Caroul";
 
 const TaskManager: React.FC = () => {
   return (
@@ -13,9 +15,10 @@ const TaskManager: React.FC = () => {
       <View style={styles.container}>
         <TopAppBar />
         <CarouselHero />
-        <SectionHeader />
+        {/* <SectionHeader /> */}
         <View style={styles.taskListContainer}>
-          <TaskList />
+          {/* <TaskList /> */}
+          <Task />
         </View>
         <GestureBar />
       </View>
